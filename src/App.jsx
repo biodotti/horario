@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { School, Users, BookOpen, Calendar, Settings, Save, ChevronRight, CheckCircle } from 'lucide-react';
+import logo from './assets/logo.png';
 import { db } from './firebase-config';
 import SchoolForm from './components/SchoolForm';
 import ClassesForm from './components/ClassesForm';
 import TeachersForm from './components/TeachersForm';
 import SubjectsForm from './components/SubjectsForm';
 import ScheduleView from './components/ScheduleView';
+import CSVImport from './components/CSVImport';
 
 function App() {
     const [activeTab, setActiveTab] = useState('school');
@@ -90,6 +92,15 @@ function App() {
         showNotification('Dados salvos localmente!');
     };
 
+    const handleImport = (data) => {
+        if (data.school) setSchoolData(prev => ({ ...prev, ...data.school }));
+        if (data.classes.length) setClassesData(prev => [...prev, ...data.classes]);
+        if (data.teachers.length) setTeachersData(prev => [...prev, ...data.teachers]);
+        if (data.subjects.length) setSubjectsData(prev => ({ ...prev, subjects: [...prev.subjects, ...data.subjects] }));
+        if (data.rooms.length) setSubjectsData(prev => ({ ...prev, rooms: [...prev.rooms, ...data.rooms] }));
+        showNotification('Dados importados com sucesso!');
+    };
+
     const renderContent = () => {
         if (isLoading) {
             return (
@@ -100,7 +111,12 @@ function App() {
         }
 
         switch (activeTab) {
-            case 'school': return <SchoolForm data={schoolData} onSave={(d) => handleSave('school', d)} />;
+            case 'school': return (
+                <div className="space-y-6">
+                    <CSVImport onImport={handleImport} />
+                    <SchoolForm data={schoolData} onSave={(d) => handleSave('school', d)} />
+                </div>
+            );
             case 'classes': return <ClassesForm data={classesData} onSave={(d) => handleSave('classes', d)} />;
             case 'teachers': return <TeachersForm data={teachersData} onSave={(d) => handleSave('teachers', d)} />;
             case 'subjects': return <SubjectsForm data={subjectsData} onSave={(d) => handleSave('subjects', d)} />;
@@ -115,8 +131,8 @@ function App() {
         <button
             onClick={() => setActiveTab(id)}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === id
-                    ? 'bg-indigo-50 text-indigo-600 font-medium'
-                    : 'text-gray-600 hover:bg-gray-50'
+                ? 'bg-indigo-50 text-indigo-600 font-medium'
+                : 'text-gray-600 hover:bg-gray-50'
                 }`}
         >
             <Icon size={20} />
@@ -130,9 +146,9 @@ function App() {
             {/* Sidebar */}
             <aside className="w-64 bg-white border-r border-gray-200 fixed h-full z-10">
                 <div className="p-6 border-b border-gray-100">
-                    <div className="flex items-center space-x-2 text-indigo-600 font-bold text-xl">
-                        <Calendar size={24} />
-                        <span>Scheduler AI</span>
+                    <div className="flex items-center space-x-3">
+                        <img src={logo} alt="GERA Skills Logo" className="w-10 h-10 object-contain" />
+                        <span className="text-indigo-600 font-bold text-xl">GERA Skills</span>
                     </div>
                 </div>
 
